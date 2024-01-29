@@ -197,6 +197,9 @@ mod parallel_hash;
 #[cfg(feature = "parallel_hash")]
 pub use parallel_hash::{ParallelHash, ParallelHashXof};
 
+#[cfg(all(target_os = "zkvm", target_arch = "riscv32"))]
+mod succinct;
+
 /// A trait for hashing an arbitrary stream of bytes.
 ///
 /// # Example
