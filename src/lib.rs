@@ -147,8 +147,15 @@ mod keccakf;
     feature = "tuple_hash",
     feature = "parallel_hash"
 ))]
-pub use keccakf::keccakf;
 
+cfg_if::cfg_if! {
+    if #[cfg(feature = "zkvm_backend")] {
+        mod succinct;
+        pub use succinct::keccakf;
+    } else {
+        pub use keccakf::keccakf;
+    }
+}
 #[cfg(feature = "k12")]
 mod k12;
 
@@ -196,9 +203,6 @@ mod parallel_hash;
 
 #[cfg(feature = "parallel_hash")]
 pub use parallel_hash::{ParallelHash, ParallelHashXof};
-
-#[cfg(feature = "zkvm_backend")]
-mod succinct;
 
 /// A trait for hashing an arbitrary stream of bytes.
 ///
