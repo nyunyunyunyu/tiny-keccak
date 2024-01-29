@@ -32,7 +32,7 @@ const RC: [u64; ROUNDS] = [
 cfg_if::cfg_if! {
     if #[cfg(feature = "zkvm_backend")] {
         use crate::succinct;
-        use succinct::keccacf;
+        use succinct::keccakf;
     } else {
         keccak_function!("`keccak-f[1600, 24]`", keccakf, ROUNDS, RC);
     }
