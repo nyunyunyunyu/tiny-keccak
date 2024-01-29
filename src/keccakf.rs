@@ -30,7 +30,7 @@ const RC: [u64; ROUNDS] = [
 ];
 
 cfg_if::cfg_if! {
-    if #[cfg(all(target_os = "zkvm", target_arch = "riscv32"))] {
+    if #[cfg(feature = "zkvm_backend")] {
         use crate::succinct;
         use succinct::keccacf;
     } else {
