@@ -41,7 +41,6 @@ sha3 = []
 shake = []
 sp800 = ["cshake", "kmac", "tuple_hash"]
 tuple_hash = ["cshake"]
-zkvm_backend = []
 
 [[test]]
 name = "keccak"

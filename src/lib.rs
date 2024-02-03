@@ -149,7 +149,7 @@ mod keccakf;
 ))]
 
 cfg_if::cfg_if! {
-    if #[cfg(feature = "zkvm_backend")] {
+    if #[cfg(all(target_os = "zkvm", target_vendor = "succinct"))] {
         mod succinct;
         pub use succinct::keccakf;
     } else {
@@ -337,28 +337,40 @@ impl Buffer {
     }
 
     fn setout(&mut self, dst: &mut [u8], offset: usize, len: usize) {
-        self.execute(offset, len, |buffer| dst[..len].copy_from_slice(buffer));
+        // self.execute(offset, len, |buffer| dst[..len].copy_from_slice(buffer));
+        let buffer: &mut [u8; WORDS * 8] = unsafe { core::mem::transmute(&mut self.0) };
+        let dst = &mut buffer[offset..][..len];
+        dst[offset..][..len].copy_from_slice(&dst[..len]);
     }
 
     fn xorin(&mut self, src: &[u8], offset: usize, len: usize) {
-        self.execute(offset, len, |dst| {
-            assert!(dst.len() <= src.len());
-            let len = dst.len();
-            let mut dst_ptr = dst.as_mut_ptr();
-            let mut src_ptr = src.as_ptr();
-            for _ in 0..len {
+        let buffer: &mut [u8; WORDS * 8] = unsafe { core::mem::transmute(&mut self.0) };
+        let dst = &mut buffer[offset..][..len];
+        debug_assert!(dst.len() <= src.len());
+        let len = dst.len();
+        let mut dst_ptr = dst.as_mut_ptr();
+        let mut src_ptr = src.as_ptr();
+        crunchy::unroll! {
+            for _i in 0..len {
                 unsafe {
                     *dst_ptr ^= *src_ptr;
                     src_ptr = src_ptr.offset(1);
                     dst_ptr = dst_ptr.offset(1);
                 }
             }
-        });
+        }
     }
 
     fn pad(&mut self, offset: usize, delim: u8, rate: usize) {
-        self.execute(offset, 1, |buff| buff[0] ^= delim);
-        self.execute(rate - 1, 1, |buff| buff[0] ^= 0x80);
+        let buffer: &mut [u8; WORDS * 8] = unsafe { core::mem::transmute(&mut self.0) };
+        let dst = &mut buffer[offset..][..1];
+        dst[0] ^= delim;
+        // self.execute(offset, 1, |buff| buff[0] ^= delim);
+
+        let buffer: &mut [u8; WORDS * 8] = unsafe { core::mem::transmute(&mut self.0) };
+        let dst = &mut buffer[rate - 1..][..1];
+        dst[0] ^= 0x80;
+        // self.execute(rate - 1, 1, |buff| buff[0] ^= 0x80);
     }
 }
 
