@@ -51,6 +51,8 @@ const PI: [usize; 24] = [
 
 const WORDS: usize = 25;
 
+use crunchy::unroll;
+
 macro_rules! keccak_function {
     ($doc: expr, $name: ident, $rounds: expr, $rc: expr) => {
         #[doc = $doc]
@@ -350,7 +352,7 @@ impl Buffer {
         let len = dst.len();
         let mut dst_ptr = dst.as_mut_ptr();
         let mut src_ptr = src.as_ptr();
-        crunchy::unroll! {
+        unroll! {
             for _i in 0..len {
                 unsafe {
                     *dst_ptr ^= *src_ptr;
