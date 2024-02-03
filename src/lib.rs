@@ -361,13 +361,15 @@ impl Buffer {
 
     fn pad(&mut self, offset: usize, delim: u8, rate: usize) {
         let buffer: &mut [u8; WORDS * 8] = unsafe { core::mem::transmute(&mut self.0) };
-        let dst = &mut buffer[offset..][..1];
-        dst[0] ^= delim;
+        // let dst = &mut buffer[offset..][..1];
+        // dst[0] ^= delim;
+        buffer[offset] ^= delim;
         // self.execute(offset, 1, |buff| buff[0] ^= delim);
 
         let buffer: &mut [u8; WORDS * 8] = unsafe { core::mem::transmute(&mut self.0) };
-        let dst = &mut buffer[rate - 1..][..1];
-        dst[0] ^= 0x80;
+        // let dst = &mut buffer[rate - 1..][..1];
+        // dst[0] ^= 0x80;
+        buffer[rate - 1] ^= 0x80;
         // self.execute(rate - 1, 1, |buff| buff[0] ^= 0x80);
     }
 }
