@@ -51,8 +51,6 @@ const PI: [usize; 24] = [
 
 const WORDS: usize = 25;
 
-use crunchy::unroll;
-
 macro_rules! keccak_function {
     ($doc: expr, $name: ident, $rounds: expr, $rc: expr) => {
         #[doc = $doc]
@@ -341,8 +339,8 @@ impl Buffer {
     fn setout(&mut self, dst: &mut [u8], offset: usize, len: usize) {
         // self.execute(offset, len, |buffer| dst[..len].copy_from_slice(buffer));
         let buffer: &mut [u8; WORDS * 8] = unsafe { core::mem::transmute(&mut self.0) };
-        let dst = &mut buffer[offset..][..len];
-        dst[offset..][..len].copy_from_slice(&dst[..len]);
+        let buffer = &mut buffer[offset..][..len];
+        dst[..len].copy_from_slice(buffer);
     }
 
     fn xorin(&mut self, src: &[u8], offset: usize, len: usize) {
@@ -352,13 +350,11 @@ impl Buffer {
         let len = dst.len();
         let mut dst_ptr = dst.as_mut_ptr();
         let mut src_ptr = src.as_ptr();
-        unroll! {
-            for _i in 0..len {
-                unsafe {
-                    *dst_ptr ^= *src_ptr;
-                    src_ptr = src_ptr.offset(1);
-                    dst_ptr = dst_ptr.offset(1);
-                }
+        for _ in 0..len {
+            unsafe {
+                *dst_ptr ^= *src_ptr;
+                src_ptr = src_ptr.offset(1);
+                dst_ptr = dst_ptr.offset(1);
             }
         }
     }
